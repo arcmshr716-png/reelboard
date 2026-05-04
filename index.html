@@ -1,0 +1,828 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ReelBoard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Noto+Sans+JP:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg:        #0a0a0a;
+      --bg2:       #111111;
+      --bg3:       #1a1a1a;
+      --border:    #222222;
+      --border2:   #2e2e2e;
+      --text:      #e2e2e2;
+      --text2:     #7a7a7a;
+      --text3:     #3e3e3e;
+      --accent:    #c8a96e;
+      --accent-bg: rgba(200,169,110,.10);
+      --danger:    #c85555;
+      --r:         8px;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body {
+      height: 100%;
+      font-family: 'Inter', 'Noto Sans JP', -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      overflow: hidden;
+    }
+
+    #app { display: flex; height: 100vh; }
+
+    .sidebar {
+      width: 260px;
+      min-width: 260px;
+      background: var(--bg2);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+    }
+
+    .sidebar-top {
+      padding: 22px 18px 18px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .logo {
+      font-size: 17px;
+      font-weight: 600;
+      letter-spacing: .06em;
+      color: var(--accent);
+      margin-bottom: 14px;
+    }
+    .logo em { font-style: normal; color: var(--text2); font-weight: 300; }
+
+    .btn-new {
+      width: 100%;
+      padding: 9px 14px;
+      background: var(--accent);
+      color: #080808;
+      border: none;
+      border-radius: var(--r);
+      font-size: 12.5px;
+      font-weight: 600;
+      cursor: pointer;
+      letter-spacing: .04em;
+      transition: opacity .15s;
+    }
+    .btn-new:hover { opacity: .82; }
+
+    .script-list {
+      flex: 1;
+      overflow-y: auto;
+      padding: 10px 8px;
+    }
+    .script-list::-webkit-scrollbar { width: 3px; }
+    .script-list::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+
+    .script-item {
+      padding: 11px 12px;
+      border-radius: var(--r);
+      cursor: pointer;
+      margin-bottom: 2px;
+      transition: background .12s;
+      border: 1px solid transparent;
+    }
+    .script-item:hover { background: var(--bg3); }
+    .script-item.active {
+      background: var(--accent-bg);
+      border-color: rgba(200,169,110,.25);
+    }
+    .script-item-title {
+      font-size: 13px;
+      font-weight: 500;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      color: var(--text);
+    }
+    .script-item-meta {
+      font-size: 11px;
+      color: var(--text3);
+      margin-top: 3px;
+    }
+    .empty-hint {
+      padding: 40px 14px;
+      text-align: center;
+      font-size: 12.5px;
+      color: var(--text3);
+      line-height: 1.7;
+    }
+
+    .main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .welcome {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+    .welcome-icon { font-size: 44px; opacity: .18; }
+    .welcome h2 { font-size: 18px; font-weight: 300; color: var(--text2); }
+    .welcome p  { font-size: 13px; color: var(--text3); }
+
+    .editor { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+
+    .editor-bar {
+      padding: 14px 24px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .title-input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      outline: none;
+      font-size: 17px;
+      font-weight: 500;
+      color: var(--text);
+      font-family: inherit;
+    }
+    .title-input::placeholder { color: var(--text3); }
+
+    .btn-stage {
+      padding: 7px 18px;
+      background: transparent;
+      border: 1px solid var(--accent);
+      border-radius: var(--r);
+      color: var(--accent);
+      font-size: 12.5px;
+      font-weight: 500;
+      cursor: pointer;
+      letter-spacing: .04em;
+      transition: all .15s;
+      white-space: nowrap;
+    }
+    .btn-stage:hover { background: var(--accent); color: #080808; }
+
+    .btn-del {
+      padding: 7px 10px;
+      background: transparent;
+      border: 1px solid var(--border2);
+      border-radius: var(--r);
+      color: var(--text3);
+      font-size: 12px;
+      cursor: pointer;
+      transition: all .15s;
+    }
+    .btn-del:hover { border-color: var(--danger); color: var(--danger); }
+
+    .save-bar {
+      font-size: 10.5px;
+      color: var(--text3);
+      padding: 4px 24px 6px;
+      text-align: right;
+      letter-spacing: .04em;
+    }
+
+    .editor-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 24px;
+      display: flex;
+      gap: 20px;
+    }
+    .editor-body::-webkit-scrollbar { width: 3px; }
+    .editor-body::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+
+    .col-main { flex: 1; display: flex; flex-direction: column; }
+    .col-side { width: 240px; min-width: 240px; display: flex; flex-direction: column; gap: 16px; }
+
+    .sec-label {
+      font-size: 10.5px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: .12em;
+      color: var(--text3);
+      margin-bottom: 10px;
+    }
+
+    .script-area {
+      flex: 1;
+      min-height: 380px;
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      color: var(--text);
+      font-size: 15.5px;
+      line-height: 1.9;
+      padding: 18px 20px;
+      resize: vertical;
+      outline: none;
+      font-family: 'Noto Sans JP', 'Inter', sans-serif;
+      transition: border-color .15s;
+    }
+    .script-area:focus { border-color: var(--accent); }
+    .script-area::placeholder { color: var(--text3); }
+
+    .card {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      padding: 16px;
+    }
+    .card-hd {
+      font-size: 10.5px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: .12em;
+      color: var(--text3);
+      margin-bottom: 12px;
+    }
+
+    .link-row { display: flex; gap: 6px; align-items: center; margin-bottom: 6px; }
+    .link-row input {
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 6px 9px;
+      font-size: 12px;
+      color: var(--text);
+      font-family: inherit;
+      outline: none;
+      transition: border-color .12s;
+      flex: 1;
+    }
+    .link-row input.label-in { max-width: 80px; }
+    .link-row input:focus { border-color: var(--accent); }
+    .link-row input::placeholder { color: var(--text3); }
+
+    .btn-rm {
+      width: 26px;
+      height: 26px;
+      flex-shrink: 0;
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: 5px;
+      color: var(--text3);
+      cursor: pointer;
+      font-size: 11px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all .12s;
+    }
+    .btn-rm:hover { border-color: var(--danger); color: var(--danger); }
+
+    .btn-add {
+      width: 100%;
+      padding: 6px;
+      background: transparent;
+      border: 1px dashed var(--border2);
+      border-radius: 6px;
+      color: var(--text3);
+      cursor: pointer;
+      font-size: 11.5px;
+      transition: all .12s;
+      margin-top: 4px;
+    }
+    .btn-add:hover { border-color: var(--accent); color: var(--accent); }
+
+    .img-item { margin-bottom: 12px; }
+    .img-preview {
+      width: 100%;
+      height: 100px;
+      object-fit: cover;
+      border-radius: 6px;
+      margin-bottom: 6px;
+      display: block;
+    }
+    .img-placeholder {
+      width: 100%;
+      height: 60px;
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      color: var(--text3);
+      margin-bottom: 6px;
+    }
+    .img-row { display: flex; gap: 6px; align-items: center; margin-bottom: 4px; }
+    .img-row input {
+      flex: 1;
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 5px 8px;
+      font-size: 11px;
+      color: var(--text);
+      font-family: inherit;
+      outline: none;
+      transition: border-color .12s;
+    }
+    .img-row input:focus { border-color: var(--accent); }
+    .img-row input::placeholder { color: var(--text3); }
+
+    #stage {
+      position: fixed;
+      inset: 0;
+      background: #000;
+      z-index: 9999;
+      display: flex;
+      flex-direction: column;
+      cursor: none;
+    }
+    #stage.show-cursor { cursor: default; }
+
+    .stage-hd {
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      padding: 20px 30px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      opacity: 0;
+      transition: opacity .25s;
+      pointer-events: none;
+      z-index: 2;
+    }
+    #stage.show-cursor .stage-hd {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .stage-title-lbl {
+      font-size: 13px;
+      color: rgba(255,255,255,.3);
+      font-weight: 300;
+      letter-spacing: .06em;
+    }
+
+    .btn-exit {
+      padding: 6px 16px;
+      background: rgba(255,255,255,.07);
+      border: 1px solid rgba(255,255,255,.12);
+      border-radius: 6px;
+      color: rgba(255,255,255,.5);
+      font-size: 12px;
+      cursor: pointer;
+      transition: all .15s;
+    }
+    .btn-exit:hover { background: rgba(255,255,255,.12); color: #fff; }
+
+    .stage-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 80px clamp(24px, 10vw, 140px) 80px;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+    }
+    .stage-body::-webkit-scrollbar { width: 3px; }
+    .stage-body::-webkit-scrollbar-thumb { background: rgba(255,255,255,.08); }
+
+    .stage-text {
+      font-size: clamp(20px, 3.2vw, 40px);
+      line-height: 2.1;
+      color: rgba(255,255,255,.9);
+      white-space: pre-wrap;
+      font-family: 'Noto Sans JP', sans-serif;
+      font-weight: 300;
+      letter-spacing: .04em;
+      max-width: 860px;
+      width: 100%;
+    }
+
+    .stage-section {
+      margin-top: 56px;
+      max-width: 860px;
+      width: 100%;
+    }
+    .stage-sec-label {
+      font-size: 10px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: .18em;
+      color: rgba(255,255,255,.18);
+      margin-bottom: 14px;
+    }
+
+    .stage-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 14px;
+      background: rgba(255,255,255,.04);
+      border: 1px solid rgba(255,255,255,.09);
+      border-radius: 6px;
+      color: rgba(255,255,255,.55);
+      text-decoration: none;
+      font-size: 13px;
+      margin-right: 8px;
+      margin-bottom: 8px;
+      transition: all .15s;
+    }
+    .stage-link:hover { background: rgba(255,255,255,.09); color: #fff; }
+
+    .stage-images {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 10px;
+    }
+    .stage-img-wrap {}
+    .stage-img {
+      width: 100%;
+      border-radius: 7px;
+      object-fit: cover;
+      display: block;
+    }
+    .stage-img-cap {
+      font-size: 11px;
+      color: rgba(255,255,255,.25);
+      margin-top: 5px;
+      text-align: center;
+    }
+
+    .stage-controls {
+      position: fixed;
+      bottom: 28px;
+      right: 32px;
+      display: flex;
+      gap: 8px;
+      opacity: 0;
+      transition: opacity .25s;
+      pointer-events: none;
+    }
+    #stage.show-cursor .stage-controls {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .ctrl-btn {
+      width: 34px;
+      height: 34px;
+      background: rgba(255,255,255,.07);
+      border: 1px solid rgba(255,255,255,.12);
+      border-radius: 7px;
+      color: rgba(255,255,255,.5);
+      font-size: 16px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all .12s;
+    }
+    .ctrl-btn:hover { background: rgba(255,255,255,.12); color: #fff; }
+
+    .hidden { display: none !important; }
+  </style>
+</head>
+<body>
+<div id="app">
+
+  <div class="sidebar">
+    <div class="sidebar-top">
+      <div class="logo">Reel<em>Board</em></div>
+      <button class="btn-new" onclick="newScript()">＋ 新しい台本</button>
+    </div>
+    <div class="script-list" id="scriptList">
+      <div class="empty-hint" id="emptyHint">
+        台本がまだありません。<br>「新しい台本」で作成してください。
+      </div>
+    </div>
+  </div>
+
+  <div class="main">
+
+    <div class="welcome" id="welcome">
+      <div class="welcome-icon">🎬</div>
+      <h2>台本を選択 または 新規作成</h2>
+      <p>サイドバーから台本を選択してください</p>
+    </div>
+
+    <div class="editor hidden" id="editor">
+      <div class="editor-bar">
+        <input id="titleInput" class="title-input" type="text" placeholder="タイトルを入力..." oninput="onTitle()">
+        <button class="btn-stage" onclick="openStage()">▶ ステージ</button>
+        <button class="btn-del" onclick="delScript()" title="削除">✕</button>
+      </div>
+      <div class="save-bar" id="saveBar">自動保存</div>
+      <div class="editor-body">
+
+        <div class="col-main">
+          <div class="sec-label">台本テキスト</div>
+          <textarea id="contentInput" class="script-area"
+            placeholder="台本のテキストをここに入力してください..."
+            oninput="onContent()"></textarea>
+        </div>
+
+        <div class="col-side">
+
+          <div class="card">
+            <div class="card-hd">リンク</div>
+            <div id="linkList"></div>
+            <button class="btn-add" onclick="addLink()">＋ リンクを追加</button>
+          </div>
+
+          <div class="card">
+            <div class="card-hd">画像</div>
+            <div id="imgList"></div>
+            <button class="btn-add" onclick="addImg()">＋ 画像を追加</button>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div id="stage" class="hidden">
+  <div class="stage-hd">
+    <div class="stage-title-lbl" id="stageTitleLbl"></div>
+    <button class="btn-exit" onclick="closeStage()">✕ 閉じる</button>
+  </div>
+  <div class="stage-body">
+    <div id="stageText" class="stage-text"></div>
+    <div id="stageLinks" class="stage-section hidden"></div>
+    <div id="stageImgs"  class="stage-section hidden"></div>
+  </div>
+  <div class="stage-controls">
+    <button class="ctrl-btn" onclick="changeFontSize(-2)" title="文字を小さく">−</button>
+    <button class="ctrl-btn" onclick="changeFontSize(+2)" title="文字を大きく">＋</button>
+  </div>
+</div>
+
+<script>
+  let scripts  = JSON.parse(localStorage.getItem('rb_scripts') || '[]');
+  let activeId = null;
+  let saveT    = null;
+  let stageFs  = null;
+
+  renderList();
+
+  const $ = id => document.getElementById(id);
+  const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2);
+
+  function get(id) { return scripts.find(s => s.id === id); }
+
+  function persist() {
+    localStorage.setItem('rb_scripts', JSON.stringify(scripts));
+    $('saveBar').textContent = '保存済み ✓';
+    clearTimeout(saveT);
+    saveT = setTimeout(() => { $('saveBar').textContent = '自動保存'; }, 1800);
+  }
+
+  function esc(s) {
+    return (s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  function fmtDate(ts) {
+    if (!ts) return '';
+    const d = new Date(ts);
+    const mm = d.getMonth()+1, dd = d.getDate();
+    const hh = String(d.getHours()).padStart(2,'0'), mi = String(d.getMinutes()).padStart(2,'0');
+    return `${mm}/${dd} ${hh}:${mi}`;
+  }
+
+  function renderList() {
+    const list = $('scriptList');
+    list.querySelectorAll('.script-item').forEach(el => el.remove());
+    $('emptyHint').classList.toggle('hidden', scripts.length > 0);
+
+    [...scripts].reverse().forEach(s => {
+      const el = document.createElement('div');
+      el.className = 'script-item' + (s.id === activeId ? ' active' : '');
+      el.innerHTML = `
+        <div class="script-item-title">${esc(s.title) || '<em style="opacity:.4">無題の台本</em>'}</div>
+        <div class="script-item-meta">${fmtDate(s.updatedAt)}</div>`;
+      el.onclick = () => selectScript(s.id);
+      list.appendChild(el);
+    });
+  }
+
+  function selectScript(id) {
+    activeId = id;
+    const s = get(id);
+    if (!s) return;
+    $('welcome').classList.add('hidden');
+    $('editor').classList.remove('hidden');
+    $('titleInput').value   = s.title   || '';
+    $('contentInput').value = s.content || '';
+    renderLinks(s);
+    renderImgs(s);
+    renderList();
+  }
+
+  function newScript() {
+    const s = {
+      id: uid(), title: '', content: '',
+      links: [], images: [],
+      createdAt: Date.now(), updatedAt: Date.now()
+    };
+    scripts.unshift(s);
+    persist();
+    selectScript(s.id);
+  }
+
+  function delScript() {
+    if (!activeId) return;
+    if (!confirm('この台本を削除しますか？')) return;
+    scripts = scripts.filter(s => s.id !== activeId);
+    activeId = null;
+    persist();
+    $('editor').classList.add('hidden');
+    $('welcome').classList.remove('hidden');
+    renderList();
+  }
+
+  function onTitle() {
+    if (!activeId) return;
+    get(activeId).title = $('titleInput').value;
+    get(activeId).updatedAt = Date.now();
+    scheduleSave();
+  }
+  function onContent() {
+    if (!activeId) return;
+    get(activeId).content = $('contentInput').value;
+    get(activeId).updatedAt = Date.now();
+    scheduleSave();
+  }
+  function scheduleSave() {
+    clearTimeout(saveT);
+    saveT = setTimeout(() => { persist(); renderList(); }, 600);
+  }
+
+  function renderLinks(s) {
+    const list = $('linkList');
+    list.innerHTML = '';
+    (s.links||[]).forEach((lk, i) => {
+      const row = document.createElement('div');
+      row.className = 'link-row';
+      row.innerHTML = `
+        <input class="label-in" type="text" placeholder="ラベル" value="${esc(lk.label)}"
+          oninput="updateLink(${i},'label',this.value)">
+        <input type="url" placeholder="https://..." value="${esc(lk.url)}"
+          oninput="updateLink(${i},'url',this.value)">
+        <button class="btn-rm" onclick="rmLink(${i})">✕</button>`;
+      list.appendChild(row);
+    });
+  }
+
+  function addLink() {
+    if (!activeId) return;
+    const s = get(activeId);
+    s.links.push({ label:'', url:'' });
+    s.updatedAt = Date.now();
+    persist(); renderLinks(s);
+  }
+  function updateLink(i, f, v) {
+    if (!activeId) return;
+    const s = get(activeId);
+    s.links[i][f] = v;
+    s.updatedAt = Date.now();
+    scheduleSave();
+  }
+  function rmLink(i) {
+    if (!activeId) return;
+    const s = get(activeId);
+    s.links.splice(i,1);
+    s.updatedAt = Date.now();
+    persist(); renderLinks(s);
+  }
+
+  function renderImgs(s) {
+    const list = $('imgList');
+    list.innerHTML = '';
+    (s.images||[]).forEach((img, i) => {
+      const wrap = document.createElement('div');
+      wrap.className = 'img-item';
+      const previewHtml = img.url
+        ? `<img src="${esc(img.url)}" class="img-preview"
+            onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"
+            onload="this.nextElementSibling.style.display='none'">
+           <div class="img-placeholder" style="display:none">読み込み失敗</div>`
+        : `<div class="img-placeholder">URL を入力してください</div>`;
+      wrap.innerHTML = previewHtml + `
+        <div class="img-row">
+          <input type="url" placeholder="画像 URL..." value="${esc(img.url)}"
+            oninput="updateImg(${i},'url',this.value)">
+          <button class="btn-rm" onclick="rmImg(${i})">✕</button>
+        </div>
+        <div class="img-row">
+          <input type="text" placeholder="キャプション（任意）" value="${esc(img.caption||'')}"
+            oninput="updateImg(${i},'caption',this.value)">
+        </div>`;
+      list.appendChild(wrap);
+    });
+  }
+
+  function addImg() {
+    if (!activeId) return;
+    const s = get(activeId);
+    s.images.push({ url:'', caption:'' });
+    s.updatedAt = Date.now();
+    persist(); renderImgs(s);
+  }
+  function updateImg(i, f, v) {
+    if (!activeId) return;
+    const s = get(activeId);
+    s.images[i][f] = v;
+    s.updatedAt = Date.now();
+    clearTimeout(saveT);
+    saveT = setTimeout(() => { persist(); renderImgs(s); }, 900);
+  }
+  function rmImg(i) {
+    if (!activeId) return;
+    const s = get(activeId);
+    s.images.splice(i,1);
+    s.updatedAt = Date.now();
+    persist(); renderImgs(s);
+  }
+
+  let cursorT = null;
+
+  function openStage() {
+    if (!activeId) return;
+    const s = get(activeId);
+    stageFs = null;
+    $('stageTitleLbl').textContent = s.title || '無題の台本';
+    $('stageText').textContent = s.content || '';
+    $('stageText').style.fontSize = '';
+
+    const validLinks = (s.links||[]).filter(l => l.url);
+    const linksEl = $('stageLinks');
+    if (validLinks.length) {
+      linksEl.innerHTML = `<div class="stage-sec-label">Links</div>` +
+        validLinks.map(l =>
+          `<a href="${esc(l.url)}" target="_blank" rel="noopener" class="stage-link">
+            <span style="opacity:.5">↗</span> ${esc(l.label || l.url)}
+          </a>`
+        ).join('');
+      linksEl.classList.remove('hidden');
+    } else {
+      linksEl.classList.add('hidden');
+    }
+
+    const validImgs = (s.images||[]).filter(im => im.url);
+    const imgsEl = $('stageImgs');
+    if (validImgs.length) {
+      imgsEl.innerHTML = `<div class="stage-sec-label">Images</div><div class="stage-images">` +
+        validImgs.map(im =>
+          `<div class="stage-img-wrap">
+            <img src="${esc(im.url)}" class="stage-img" onerror="this.style.opacity='.15'">
+            ${im.caption ? `<div class="stage-img-cap">${esc(im.caption)}</div>` : ''}
+          </div>`
+        ).join('') + `</div>`;
+      imgsEl.classList.remove('hidden');
+    } else {
+      imgsEl.classList.add('hidden');
+    }
+
+    const stage = $('stage');
+    stage.classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+    showCursorBriefly();
+  }
+
+  function closeStage() {
+    $('stage').classList.add('hidden');
+    document.body.style.overflow = '';
+    clearTimeout(cursorT);
+  }
+
+  function showCursorBriefly() {
+    const stage = $('stage');
+    stage.classList.add('show-cursor');
+    clearTimeout(cursorT);
+    cursorT = setTimeout(() => stage.classList.remove('show-cursor'), 2200);
+  }
+
+  $('stage').addEventListener('mousemove', showCursorBriefly);
+
+  function changeFontSize(delta) {
+    const el = $('stageText');
+    const current = stageFs || parseFloat(getComputedStyle(el).fontSize);
+    stageFs = Math.max(14, Math.min(72, current + delta));
+    el.style.fontSize = stageFs + 'px';
+  }
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') closeStage();
+    if (!$('stage').classList.contains('hidden')) {
+      if (e.key === '+' || e.key === '=') changeFontSize(2);
+      if (e.key === '-')                   changeFontSize(-2);
+    }
+  });
+</script>
+</body>
+</html>
