@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="96" fill="#0a0a0a"/>
+  <rect width="512" height="512" rx="96" fill="url(#grad)" opacity="0.15"/>
+  <defs>
+    <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#c8a96e;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#8b6a30;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  <!-- Film strip left -->
+  <rect x="72" y="160" width="32" height="192" rx="6" fill="#c8a96e" opacity="0.25"/>
+  <rect x="72" y="176" width="32" height="24" rx="3" fill="#c8a96e" opacity="0.6"/>
+  <rect x="72" y="216" width="32" height="24" rx="3" fill="#c8a96e" opacity="0.6"/>
+  <rect x="72" y="256" width="32" height="24" rx="3" fill="#c8a96e" opacity="0.6"/>
+  <rect x="72" y="296" width="32" height="24" rx="3" fill="#c8a96e" opacity="0.6"/>
+  <!-- Film strip right -->
+  <rect x="408" y="160" width="32" height="192" rx="6" fill="#c8a96e" opacity="0.25"/>
+  <rect x="408" y="176" width="32" height="24" rx="3" fill="#c8a96e" opacity="0.6"/>
+  <rect x="408" y="216" width="32" height="24" rx="3" fill="#c8a96e" opacity="0.6"/>
+  <rect x="408" y="256" width="32" height="24" rx="3" fill="#c8a96e" opacity="0.6"/>
+  <rect x="408" y="296" width="32" height="24" rx="3" fill="#c8a96e" opacity="0.6"/>
+  <!-- RB text -->
+  <text x="256" y="295" font-family="Georgia, serif" font-size="168" font-weight="700"
+        fill="#c8a96e" text-anchor="middle" letter-spacing="-4">RB</text>
+  <!-- Underline accent -->
+  <rect x="156" y="320" width="200" height="4" rx="2" fill="#c8a96e" opacity="0.5"/>
+</svg>
